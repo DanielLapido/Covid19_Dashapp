@@ -42,3 +42,13 @@ factors = sorted(globalreport['Country/Region'].unique())
 
 
 
+################################################################################
+# APP
+################################################################################
+
+app = dash.Dash()
+app.layout = html.H1("Covid-19")
+
+if __name__ == "__main__":
+    app.run_server(port=5054, debug=True)
+
