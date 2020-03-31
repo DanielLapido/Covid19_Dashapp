@@ -21,6 +21,10 @@ report.loc[:, "Province/State"] = report.loc[:, "Province/State"].fillna("")
 report.columns = ['Province/State', 'Country/Region', 'Lat', 'Long', "Confirmed", "Deaths"]
 
 report.loc[:, "Confirmed"] = report.loc[:, "Confirmed"].fillna(0)
+
+report["text"] = (report["Country/Region"] + "<br>" + report["Province/State"] + "<br>Confirmed cases: " +
+                  report["Confirmed"].astype(str) + "<br>Deaths: " + report["Deaths"].astype(str))
+
 date = pd.to_datetime(Confirmed.columns[4:-1])
 
 conf2 = pd.melt(Confirmed, id_vars=Confirmed.columns[0:4])
@@ -37,17 +41,11 @@ globalreport['Country/Region'] = pd.Categorical(globalreport['Country/Region'])
 
 factors = sorted(globalreport['Country/Region'].unique())
 
-
-
-
-import pandas as pd
-us_cities = pd.read_csv("https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv")
-
 import plotly.express as px
 
 bubble = np.log2(report.Confirmed + 1)
 fig = px.scatter_mapbox(report, lat="Lat", lon="Long", hover_name="Province/State", hover_data=["Country/Region", "Confirmed"],
-                        color_discrete_sequence=["fuchsia"], zoom=1.5, height=800, size=bubble)
+                        color_discrete_sequence=["red"], zoom=1.5, height=800, size=bubble)
 fig.update_layout(
     mapbox_style="white-bg",
     mapbox_layers=[
@@ -67,13 +65,32 @@ import plotly.graph_objects as go # or plotly.express as px
 # fig.update_layout( ... )
 
 fig2 = px.scatter_geo(report, lat="Lat", lon="Long",
-                     hover_name="Country/Region", size=bubble, height=800, projection="orthographic")
+                     hover_name="Country/Region", size=bubble, height=800, projection="orthographic",
+                      color_discrete_sequence=["red"], text="text")
+
+fig2.update_layout(
+    title_text='TOTAL CONFIRMED:' + str(sum(report["Confirmed"])) + '<br>' +
+               'TOTAL DEATHS:' + str(sum(report["Deaths"])),
+)
 
 bubble2 = np.log2(globalreport.Confirmed + 1)
 fig3 = px.scatter_geo(globalreport, lat="Lat", lon="Long",
                      hover_name="Country/Region", size=bubble2, height=800,
                      animation_frame="Date",
                      projection="natural earth")
+
+fig3.update_layout(
+    mapbox_style="white-bg",
+    mapbox_layers=[
+        {
+            "below": 'traces',
+            "sourcetype": "raster",
+            "source": [
+                "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}"
+            ]
+        }
+      ])
+fig3.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
 
 app = dash.Dash()
@@ -98,4 +115,3 @@ app.layout = html.Div([
 ])
 
 app.run_server(debug=True, use_reloader=False)  # Turn off reloader if inside Jupyter
-
