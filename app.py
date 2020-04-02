@@ -2,18 +2,73 @@ import dash
 import dash_bootstrap_components as dbc  # import the library
 import dash_core_components as dcc
 import dash_html_components as html
+import dash_admin_components as dac
 import dash_table
 import plotly.graph_objs as go
 from dash.dependencies import Input, Output, State
+import dash
 
 import pandas as pd
 import time
 import numpy as np
 import json
 
+# css_style = {
+#     "title": {
+#         "color": "white",
+#         "background-color": "#3182bd",
+#         "margin": "0",
+#         "padding": "5px",
+#         "border-bottom": "solid thin black",
+#         "border-radius": "4px"
+#     },
+#
+#     "title-success": {
+#         "color": "white",
+#         "background-color": "#31a354",
+#         "margin": "0",
+#         "padding": "5px",
+#         "border-bottom": "solid thin black",
+#         "border-radius": "4px"
+#     },
+#
+#     "title-failure": {
+#         "color": "white",
+#         "background-color": "#de2d26",
+#         "margin": "0",
+#         "padding": "5px",
+#         "border-bottom": "solid thin black",
+#         "border-radius": "4px"
+#     },
+#
+#     "plotting-area": {
+#         "border": "solid thin lightgrey",
+#         "background-color": "#F5F6F9",
+#         "padding": "10",
+#         "margin-bottom": "80"
+#     },
+#
+#     "heading": {
+#         "text-align": "center",
+#         "text-decoration": "underline"
+#     },
+#
+#     "container": {
+#         "border-radius": "5px",
+#         "background-color": " #f9f9f9",
+#         "margin": "10px",
+#         "padding": "15px",
+#         "position": "relative",
+#         "box-shadow": "2px 2px 2px lightgrey"
+#
+#     }
+# }
+
+
 # Read data
 Confirmed = pd.read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv")
 Deaths = pd.read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv")
+Recovered = pd.read_csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv")
 
 
 report = pd.concat([Confirmed.iloc[:, [0, 1, 2, 3, -1]], Deaths.iloc[:, -1]], axis=1)
@@ -59,10 +114,6 @@ fig.update_layout(
       ])
 fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
-import plotly.graph_objects as go # or plotly.express as px
-# fig = go.Figure() # or any Plotly Express function e.g. px.bar(...)
-# fig.add_trace( ... )
-# fig.update_layout( ... )
 
 fig2 = px.scatter_geo(report, lat="Lat", lon="Long",
                      hover_name="Country/Region", size=bubble, height=800, projection="orthographic",
@@ -93,25 +144,129 @@ fig3.update_layout(
 fig3.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
 
-app = dash.Dash()
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+app = dash.Dash(external_stylesheets=external_stylesheets)
+
+colors = {
+    'background': '#111111',
+    'text': '#7FDBFF'
+}
+
+# app.layout = html.Div([
+#     dcc.Tabs([
+#         dcc.Tab(label='Tab one', children=[
+#             dcc.Graph(
+#                 figure=fig
+#             )
+#         ]),
+#         dcc.Tab(label='Tab two', children=[
+#             dcc.Graph(
+#                 figure=fig2
+#             )
+#         ]),
+#         dcc.Tab(label='Tab three', children=[
+#             dcc.Graph(
+#                 figure=fig3
+#             )
+#         ]),
+#     ])
+# ])
+
+
 app.layout = html.Div([
-    dcc.Tabs([
-        dcc.Tab(label='Tab one', children=[
-            dcc.Graph(
-                figure=fig
-            )
-        ]),
-        dcc.Tab(label='Tab two', children=[
-            dcc.Graph(
-                figure=fig2
-            )
-        ]),
-        dcc.Tab(label='Tab three', children=[
-            dcc.Graph(
-                figure=fig3
-            )
-        ]),
-    ])
+    html.H1('COVID-19'),
+    dcc.Tabs(id="tabs", value='tab-1', children=[
+        dcc.Tab(label='Tab One', value='tab-1'),
+        dcc.Tab(label='Tab Two', value='tab-2'),
+        dcc.Tab(label='Tab Three', value='tab-3')
+    ]),
+    html.Div(id='tabs-content')
 ])
 
-app.run_server(debug=True, use_reloader=False)  # Turn off reloader if inside Jupyter
+
+@app.callback(Output('tabs-content', 'children'),
+              [Input('tabs', 'value')])
+def render_content(tab):
+    if tab == 'tab-1':
+        return html.Div([
+            dac.TabItem(id='content_value_boxes',
+
+                        children=[
+                            html.Div([
+                                dac.InfoBox(
+                                    title="TOTAL CONFIRMED ",
+                                    value=sum(report["Confirmed"]),
+                                    gradient_color="danger",
+                                    icon="envelope"
+                                ),
+                                dac.InfoBox(
+                                    title="TOTAL RECOVERED",
+                                    gradient_color="success",
+                                    value=sum(Recovered.iloc[:, -1]),
+                                    icon="comments"
+                                ),
+                                dac.InfoBox(
+                                    title="TOTAL DEATHS",
+                                    color="black",
+                                    value=sum(report["Deaths"]),
+                                    icon="bookmark"
+                                )
+                            ], className='row')
+                        ]
+                        ),
+            dcc.Graph(
+                id='graph-1-tabs',
+                figure=fig
+            )
+        ])
+    elif tab == 'tab-2':
+        return html.Div([
+            html.H3('Tab content 2'),
+            dcc.Graph(
+                id='graph-2-tabs',
+                figure=fig2
+            )
+        ])
+    elif tab == 'tab-3':
+        return html.Div([
+            html.H3('Tab content 3'),
+            dcc.Graph(
+                id='graph-3-tabs',
+                figure=fig3
+            )
+        ])
+
+
+value_boxes_tab = dac.TabItem(id='content_value_boxes',
+
+                              children=[
+                                  html.H4('Value Boxes'),
+                                  html.Div([
+                                      dac.ValueBox(
+                                          value=150,
+                                          subtitle="New orders",
+                                          color="primary",
+                                      ),
+                                      dac.ValueBox(
+                                          elevation=4,
+                                          value="53%",
+                                          subtitle="New orders",
+                                          color="danger",
+                                      ),
+                                      dac.ValueBox(
+                                          value="44",
+                                          subtitle="User Registrations",
+                                          color="warning",
+                                          icon="suitcase"
+                                      ),
+                                      dac.ValueBox(
+                                          value="53%",
+                                          subtitle="Bounce rate",
+                                          color="success",
+                                          icon="database"
+                                      )
+                                  ], className='row')
+                              ]
+                              )
+
+app.run_server(port=5054, debug=True)
