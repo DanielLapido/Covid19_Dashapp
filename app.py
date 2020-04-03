@@ -36,8 +36,10 @@ conf2 = pd.melt(Confirmed, id_vars=Confirmed.columns[0:4])
 
 deaths2 = pd.melt(Deaths, id_vars=Deaths.columns[0:4])
 
-globalreport = pd.concat([conf2, deaths2.value], axis=1)
-globalreport.columns = ['Province/State', 'Country/Region', 'Lat', 'Long', 'Date', 'Confirmed', 'Deaths']
+recovered2 = pd.melt(Recovered, id_vars=Recovered.columns[0:4])
+
+globalreport = pd.concat([conf2, deaths2.value, recovered2.value], axis=1)
+globalreport.columns = ['Province/State', 'Country/Region', 'Lat', 'Long', 'Date', 'Confirmed', 'Deaths', 'Recovered']
 
 globalreport['Country/Region'] = pd.Categorical(globalreport['Country/Region'])
 
@@ -82,18 +84,6 @@ fig3 = px.scatter_geo(globalreport, lat="Lat", lon="Long",
                       animation_frame="Date",
                       projection="natural earth")
 
-fig3.update_layout(
-    mapbox_style="white-bg",
-    mapbox_layers=[
-        {
-            "below": 'traces',
-            "sourcetype": "raster",
-            "source": [
-                "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}"
-            ]
-        }
-    ])
-fig3.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
 
 fig4 = go.Figure(data=go.Scattergeo(
     lon=report['Long'],
@@ -236,12 +226,27 @@ def render_content(tab):
             html.H3('Tab content 2'),
             dcc.Graph(
                 id='graph-2-tabs',
-                figure=fig2
-            )
+                figure=fig3
+            ),
+            html.H2('Evolution of COVID19 by country'),
+            dcc.Dropdown(
+                id='country',
+                options=[{'label': i, 'value': i} for i in factors],
+                value=['Spain', 'Italy'],
+                multi=True
+            ),
+            html.Div([
+                html.Div([
+                    dcc.Graph(id='confirmed-evolution')
+                ], className="six columns"),
+
+                html.Div([
+                    dcc.Graph(id='death-evolution')
+                ], className="six columns"),
+            ], className="row")
         ])
     elif tab == 'tab-3':
         return html.Div([
-            html.H3('Tab content 3'),
             dcc.Graph(
                 id='graph-3-tabs',
                 figure=fig3
@@ -249,7 +254,6 @@ def render_content(tab):
         ])
     elif tab == 'tab-4':
         return html.Div([
-            html.H3('Tab content 4'),
             dcc.Graph(
                 id='graph-4-tabs',
                 figure=fig4
@@ -329,7 +333,17 @@ def update_graph(maptype):
         )
     return fig
 
+@app.callback(
+    [Output('confirmed-evolution', 'figure'),
+     Output('death-evolution', 'figure')],
+    [Input('country', 'value')])
+def evolution_plot(country):
+    serie = pd.Series(country, name="country")
+    df = globalreport[globalreport["Country/Region"].isin(serie)]
+    confirmed = px.line(df, x='Date', y='Confirmed', title='Evolution of confirmed cases', color='Country/Region')
+    death = px.line(df, x='Date', y='Deaths', title='Evolution of number of deaths', color='Country/Region')
+    return confirmed, death
+
 
 
 app.run_server(port=5054, debug=True)
-
