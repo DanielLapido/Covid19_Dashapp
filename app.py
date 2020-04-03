@@ -200,22 +200,41 @@ def render_content(tab):
             html.Div([
                 html.Div([
                     dcc.Graph(id='confirmed-evolution')
-                ], className="six columns"),
-
+                ], className="six columns", style={'display': 'inline-block'}),
                 html.Div([
                     dcc.Graph(id='death-evolution')
-                ], className="six columns"),
-            ], className="row")
+                ], className="six columns", style={'display': 'inline-block'}),
+            ], className="row", style={'width': '100%', 'display': 'inline-block'})
         ])
     elif tab == 'tab-3':
         return html.Div([
             dash_table.DataTable(
-                id='my-table',
-                columns=[{"name": i, "id": i} for i in globalreport.columns],
-                data=globalreport.to_dict('records')
-            )
+                id='datatable-interactivity',
+                columns=[
+                    {"name": i, "id": i, "deletable": True, "selectable": True} for i in globalreport.columns
+                ],
+                data=globalreport.to_dict('records'),
+                editable=True,
+                filter_action="native",
+                sort_action="native",
+                sort_mode="multi",
+                column_selectable="single",
+                row_selectable="multi",
+                row_deletable=True,
+                selected_columns=[],
+                selected_rows=[],
+                page_action="native",
+                page_current=0,
+                page_size=10,
+                style_table={'textAlign': 'center'},
+                style_cell={'padding': '5px', 'fontSize': 12, 'textAlign': 'center'},
+                style_header={
+                    'backgroundColor': 'white',
+                    'fontWeight': 'bold',
+                    'fontSize': 12},
+            )]
+        )
 
-        ])
 
 
 @app.callback(
@@ -300,6 +319,7 @@ def evolution_plot(country):
     confirmed = px.line(df, x='Date', y='Confirmed', title='Evolution of confirmed cases', color='Country/Region')
     death = px.line(df, x='Date', y='Deaths', title='Evolution of number of deaths', color='Country/Region')
     return confirmed, death
+
 
 
 
