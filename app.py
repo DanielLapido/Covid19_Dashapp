@@ -129,6 +129,8 @@ app = dash.Dash(
     external_stylesheets=[dbc.themes.CERULEAN]
 )
 
+app.config['suppress_callback_exceptions'] = True
+
 TAB_STYLE = {
     'border': 'none',
     'boxShadow': 'inset 0px -1px 0px 0px lightgrey',
@@ -151,6 +153,18 @@ SELECTED_STYLE = {
     'paddingBottom': 0,
     'height': '42px',
     'font-size': '150%'
+}
+
+items_style = {
+  'border': 'none',
+    'boxShadow': 'inset 0px -1px 0px 0px lightgrey',
+    'background': '#033C73',
+    'paddingTop': 0,
+    'paddingBottom': 0,
+    'height': '42px',
+    'font-size': '70%',
+    'color': 'white',
+    'width': '250px'
 }
 
 
@@ -200,6 +214,18 @@ def render_content(tab):
                             ], className='row')
                         ]
                         ),
+            dbc.Container(
+                [
+                    dcc.RadioItems(
+                        id='maptype',
+                        options=[{'label': i, 'value': i} for i in
+                                 ['National_map', 'open-street-map', 'stamen-toner', '3D']],
+                        value='National_map',
+                        labelStyle=items_style
+
+                    ),
+                ]
+            ),
             dcc.Graph(
                 id='graph-1-tabs',
                 figure=fig
@@ -231,4 +257,79 @@ def render_content(tab):
         ])
 
 
+@app.callback(
+    dash.dependencies.Output('graph-1-tabs', 'figure'),
+    [dash.dependencies.Input('maptype', 'value')])
+def update_graph(maptype):
+    if maptype == 'National_map' or 'open-street-map' or 'stamen-toner':
+        fig = px.scatter_mapbox(report, lat="Lat", lon="Long", hover_name="Country/Region",
+                                hover_data=["Province/State", "Confirmed", "Deaths"],
+                                color_discrete_sequence=["red"], zoom=1.5, height=800, size=bubble)
+        fig.data[0].update(
+            hovertemplate='<b>%{hovertext}</b><br>%{customdata[0]}<br>Confirmed:%{customdata[1]}<br>Deaths:%{'
+                          'customdata[2]}')
+        if maptype == 'National_map':
+
+            fig.update_layout(
+
+                mapbox_style="white-bg",
+                mapbox_layers=[
+                    {
+                        "below": 'traces',
+                        "sourcetype": "raster",
+                        "source": [
+                            "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}"
+                        ]
+                    }
+                ]
+            )
+        elif maptype == 'open-street-map':
+            fig.update_layout(
+
+                mapbox_style="open-street-map",
+            )
+        elif maptype == 'stamen-toner':
+            fig.update_layout(
+
+                mapbox_style="stamen-toner",
+            )
+        fig.update_layout(
+            template="plotly_dark",
+            margin={"r": 0, "t": 0, "l": 0, "b": 0}
+        )
+
+    if maptype == '3D':
+        fig = go.Figure(data=go.Scattergeo(
+            lon=report['Long'],
+            lat=report['Lat'],
+            hovertext=report["text"],
+            hoverinfo="text",
+            mode='markers',
+            marker=dict(
+                size=bubble,
+                opacity=0.8,
+                color="red"
+            )
+        )
+        )
+        fig.update_geos(
+            showcountries=True,
+            showland=True,
+            projection_type="orthographic",
+            landcolor="green",
+            oceancolor="MidnightBlue",
+            showocean=True,
+            lakecolor="LightBlue"
+        )
+
+        fig.update_layout(
+            height=700,
+            template="plotly_dark",
+            margin={"r": 0, "t": 0, "l": 0, "b": 0}
+        )
+    return fig
+
+
+
 app.run_server(port=5054, debug=True)
+
