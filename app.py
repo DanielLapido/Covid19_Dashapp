@@ -149,13 +149,13 @@ def render_content(tab):
                                     title="TOTAL CONFIRMED ",
                                     value=sum(report["Confirmed"]),
                                     gradient_color="danger",
-                                    icon="envelope"
+                                    icon="bookmark"
                                 ),
                                 dac.InfoBox(
                                     title="TOTAL RECOVERED",
                                     gradient_color="success",
                                     value=sum(Recovered.iloc[:, -1]),
-                                    icon="comments"
+                                    icon="bookmark"
                                 ),
                                 dac.InfoBox(
                                     title="TOTAL DEATHS",
