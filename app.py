@@ -69,21 +69,14 @@ fig.update_layout(
     margin={"r": 0, "t": 0, "l": 0, "b": 0}
 )
 
-fig2 = px.scatter_geo(report, lat="Lat", lon="Long",
-                      hover_name="Country/Region", size=bubble, height=800, projection="orthographic",
-                      color_discrete_sequence=["red"], text="text")
-
-fig2.update_layout(
-    title_text='TOTAL CONFIRMED:' + str(sum(report["Confirmed"])) + '<br>' +
-               'TOTAL DEATHS:' + str(sum(report["Deaths"])),
-)
-
 bubble2 = np.log2(globalreport.Confirmed + 1)
 fig3 = px.scatter_geo(globalreport, lat="Lat", lon="Long",
                       hover_name="Country/Region", size=bubble2, height=800,
+                      hover_data=["Province/State", "Confirmed", "Deaths"],
                       animation_frame="Date",
                       projection="natural earth")
-
+fig3.data[0].update(hovertemplate= '<b>%{hovertext}</b><br>%{customdata[0]}<br>Confirmed:%{customdata[1]}<br>Deaths:%{'
+                                  'customdata[2]}')
 
 fig4 = go.Figure(data=go.Scattergeo(
     lon=report['Long'],
@@ -158,7 +151,7 @@ items_style = {
 }
 
 
-app.layout = html.Div([
+app.layout = html.Div(style={'backgroundColor': 'gray'}, children=[
     html.H1('COVID-19'),
     dcc.Tabs(id="tabs", value='tab-1', children=[
         dcc.Tab(label='Latest data', value='tab-1', style=TAB_STYLE,
@@ -223,7 +216,7 @@ def render_content(tab):
         ])
     elif tab == 'tab-2':
         return html.Div([
-            html.H3('Tab content 2'),
+            html.H3('Worldwide Evolution of COVID19'),
             dcc.Graph(
                 id='graph-2-tabs',
                 figure=fig3
