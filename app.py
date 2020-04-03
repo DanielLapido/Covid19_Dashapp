@@ -78,35 +78,6 @@ fig3 = px.scatter_geo(globalreport, lat="Lat", lon="Long",
 fig3.data[0].update(hovertemplate= '<b>%{hovertext}</b><br>%{customdata[0]}<br>Confirmed:%{customdata[1]}<br>Deaths:%{'
                                   'customdata[2]}')
 
-fig4 = go.Figure(data=go.Scattergeo(
-    lon=report['Long'],
-    lat=report['Lat'],
-    hovertext=report["text"],
-    hoverinfo="text",
-    mode='markers',
-    marker=dict(
-        size=bubble,
-        opacity=0.8,
-        color="red"
-    )
-)
-)
-fig4.update_geos(
-    showcountries=True,
-    showland=True,
-    projection_type="orthographic",
-    landcolor="green",
-    oceancolor="MidnightBlue",
-    showocean=True,
-    lakecolor="LightBlue"
-)
-
-fig4.update_layout(
-    height=700,
-    template="plotly_dark",
-    margin={"r": 0, "t": 0, "l": 0, "b": 0}
-)
-
 app = dash.Dash(
     __name__,
     external_stylesheets=[dbc.themes.CERULEAN]
@@ -158,9 +129,7 @@ app.layout = html.Div(style={'backgroundColor': 'gray'}, children=[
                 selected_style=SELECTED_STYLE),
         dcc.Tab(label='Evolution', value='tab-2', style=TAB_STYLE,
                 selected_style=SELECTED_STYLE),
-        dcc.Tab(label='Tab Three', value='tab-3', style=TAB_STYLE,
-                selected_style=SELECTED_STYLE),
-        dcc.Tab(label='Tab Four', value='tab-4', style=TAB_STYLE,
+        dcc.Tab(label='Data Explorer', value='tab-3', style=TAB_STYLE,
                 selected_style=SELECTED_STYLE),
     ]),
     html.Div(id='tabs-content')
@@ -240,17 +209,12 @@ def render_content(tab):
         ])
     elif tab == 'tab-3':
         return html.Div([
-            dcc.Graph(
-                id='graph-3-tabs',
-                figure=fig3
+            dash_table.DataTable(
+                id='my-table',
+                columns=[{"name": i, "id": i} for i in globalreport.columns],
+                data=globalreport.to_dict('records')
             )
-        ])
-    elif tab == 'tab-4':
-        return html.Div([
-            dcc.Graph(
-                id='graph-4-tabs',
-                figure=fig4
-            )
+
         ])
 
 
