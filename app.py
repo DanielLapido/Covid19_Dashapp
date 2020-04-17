@@ -26,6 +26,8 @@ report.loc[:, "Province/State"] = report.loc[:, "Province/State"].fillna("")
 report.columns = ['Province/State', 'Country/Region', 'Lat', 'Long', "Confirmed", "Deaths"]
 
 report.loc[:, "Confirmed"] = report.loc[:, "Confirmed"].fillna(0)
+report.Confirmed = report.Confirmed.mask(report.Confirmed.lt(0), 0)
+
 
 report["text"] = (report["Country/Region"].str.upper() + "<br>" + report["Province/State"] + "<br>Confirmed cases: " +
                   report["Confirmed"].astype(str) + "<br>Deaths: " + report["Deaths"].astype(str))
@@ -40,6 +42,7 @@ recovered2 = pd.melt(Recovered, id_vars=Recovered.columns[0:4])
 
 globalreport = pd.concat([conf2, deaths2.value, recovered2.value], axis=1)
 globalreport.columns = ['Province/State', 'Country/Region', 'Lat', 'Long', 'Date', 'Confirmed', 'Deaths', 'Recovered']
+globalreport.Confirmed = globalreport.Confirmed.mask(globalreport.Confirmed.lt(0), 0)
 
 globalreport['Country/Region'] = pd.Categorical(globalreport['Country/Region'])
 
