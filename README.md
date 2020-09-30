@@ -1,14 +1,5 @@
-### Master: Master in statistics for data science
-### Course: Data tyding and Reporting
-### Year: 2019-2020
-### Student: Daniel Lapido Martínez
-### GitHub repository: [url](https://github.com/DanielLapido/Assignment7)
 
-
-
-# COVID 19 Shiny app 
-
-The 2019–20 coronavirus pandemic is an ongoing pandemic of coronavirus disease 2019 (COVID-19) caused by the severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2). The disease was first identified in Wuhan, Hubei, China in December 2019. On 11 March 2020, the World Health Organization declared the outbreak a pandemic.
+# COVID 19 Dash app python
 
 The aim of this app is to display the latest worldwide information about the virus, and show its temporal evolution in each country.
 It is inspired on plenty of webpages about this topic which already exist. For example:
@@ -22,7 +13,7 @@ The data is gathered from the [Center for Systems Science and Engineering (CSSE)
 
 # Table of Contents:
 
-- Latest information: Displays the total number of confirmed, recovered and deaths cases worldwide. It also allows to click on each country and a pop up will show the information for that country. It is also possible to select the type of map to be displayed.
+- Latest information: Displays the total number of confirmed, recovered and deaths cases worldwide. It also allows to click on each country and a pop up will show the information for that country. It is also possible to select the type of map to be displayed. Even a 3D worldwide visualization is available.
 
 - Evolution of the virus: A temporal world map animation is implemented so that not only the latest information is available but also the daily information of the virus since the outbreak. The curve of number of deaths and confirmed cases is also displayed. It allows multiple selection so that the evolution between countries can be compared.
 
