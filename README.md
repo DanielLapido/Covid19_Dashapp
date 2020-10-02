@@ -1,7 +1,7 @@
 
 # COVID 19 Dash app python
 
-The aim of this app is to display the latest worldwide information about the virus, and show its temporal evolution in each country.
+The aim of this app was to display the latest worldwide information about the virus, and show its temporal evolution in each country, specially during the first months since the outbreak.
 It is inspired on plenty of webpages about this topic which already exist. For example:
 
 -  [Channel news asia](https://infographics.channelnewsasia.com/wuhan/gmap.html)
