@@ -1,12 +1,13 @@
 import dash
 import dash_bootstrap_components as dbc  # import the library
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc
+from dash import html
 import dash_admin_components as dac
-import dash_table
+from dash import dash_table
+from dash.dash_table.Format import Group
 import plotly.graph_objs as go
 from dash.dependencies import Input, Output, State
-import dash
+
 
 import pandas as pd
 import time
